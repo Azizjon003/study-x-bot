@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/main.ts",
     "build": "tsc ",
-    "start:build": "node dist/src/main.js"
+    "start:build": "node dist/src/main.js",
+    "start": "ts-node src/main.ts"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +20,7 @@
     "speakeasy": "^2.0.0",
     "telegraf": "^4.16.3",
     "telegraf-postgres-session": "^1.0.5",
+    "ts-node": "^10.9.2",
     "xss": "^1.0.15"
   },
   "devDependencies": {
