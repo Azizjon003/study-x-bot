@@ -1,9 +1,11 @@
 require("dotenv").config();
 import { Context, Middleware } from "telegraf";
 import { SceneContext } from "telegraf/typings/scenes";
+import prisma from "../prisma/prisma";
 import bot from "./core/bot";
 import session from "./core/session";
 import stage from "./scenes/index";
+import randomNumber from "./services/generateCode";
 import botStart from "./utils/startBot";
 
 bot.use(session);
@@ -29,6 +31,57 @@ bot.hears(
     ctx.reply("Nomalum buyruq.Qayta /start buyrug'ini bosing");
   }
 );
+
+bot.hears("/login", async (ctx: any) => {
+  console.log(ctx.update);
+  const user_id = String(ctx.from?.id);
+  const telegramUser = await prisma.telegramUser.findFirst({
+    where: {
+      telegramId: user_id,
+    },
+  });
+
+  if (!telegramUser) {
+    ctx.reply("Siz avvaldan ro'yxatdan o'tishingiz kerak");
+    return;
+  }
+
+  const generateCode = randomNumber();
+
+  let createTest = await prisma.code.findFirst({
+    where: {
+      userId: telegramUser?.id,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  if (createTest) {
+    if (createTest.createdAt.getTime() + 90000 > new Date().getTime()) {
+      ctx.reply("Siz avval yuborgan kodingizni active kuting");
+      return;
+    } else {
+      createTest = await prisma.code.create({
+        data: {
+          code: generateCode,
+          userId: telegramUser?.id,
+        },
+      });
+
+      ctx.reply(`Sizning kodingiz: ${generateCode}`);
+    }
+  } else {
+    createTest = await prisma.code.create({
+      data: {
+        code: generateCode,
+        userId: telegramUser?.id,
+      },
+    });
+
+    ctx.reply(`Sizning kodingiz: ${generateCode}`);
+  }
+});
 
 bot.catch(async (err: any, ctx) => {
   const userId = ctx?.from?.id;

@@ -1,23 +1,46 @@
 import { Scenes } from "telegraf";
+import xss from "xss";
 import enabled from "../utils/enabled";
 import { keyboards } from "../utils/keyboards";
 const scene = new Scenes.BaseScene("start");
 
-export let keyboard = [["Start"]];
+export let keyboard = [];
 export let admin_keyboard = [["Admin"]];
 
 scene.enter(async (ctx: any) => {
   const user_id = ctx.from?.id;
 
-  const user_name = ctx.from?.first_name || ctx.from?.username;
+  const user_name = ctx.from?.username || ctx.from?.first_name;
 
   const enable = await enabled(String(user_id), String(user_name));
 
-  if (enable === "one" || enable === "four") {
+  if (enable === "one") {
     ctx.telegram.sendMessage(
       user_id,
-      `Assalomu alaykum!\nYangi Taqdimot tugmasini bosib taqdimot yaratishni boshlashingiz mumkin!`,
-      keyboards(keyboard)
+      `🇺🇿
+Salom ${xss(user_name)} 👋
+@magi_slides'ning rasmiy botiga xush kelibsiz
+
+⬇ Kontaktingizni yuboring (tugmani bosib)
+
+🇺🇸
+Hi ${xss(user_name)} 👋
+Welcome to @magi_slides's official bot
+
+⬇ Send your contact (by clicking button)`,
+      {
+        reply_markup: {
+          keyboard: [
+            [
+              {
+                text: "📞 Contact",
+                request_contact: true,
+              },
+            ],
+          ],
+          resize_keyboard: true,
+        },
+      }
     );
 
     console.log("start scene");
@@ -33,6 +56,13 @@ scene.enter(async (ctx: any) => {
       "Assalomu alaykum.Kechirasiz siz admin tomonidan bloklangansiz"
     );
     return;
+  } else if (enable === "four") {
+    ctx.telegram.sendMessage(
+      user_id,
+      `Assalomu alaykum /login buyrug'idan foydalanib kirish kodingizni oling`
+    );
+
+    return await ctx.scene.enter("control");
   }
 });
 

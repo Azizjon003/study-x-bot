@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -24,13 +18,45 @@ model User {
   username  String?
   name      String?
   role      RoleEnum @default(USER)
-  telegram_id String @unique
   isActive  Boolean @default(true)
-working      Boolean @default(false)
+  region    String?
+  phone     String? @unique
+  telegramUser  telegramUser[]
+  session        session[]
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 }
 
+model telegramUser {
+  id     String @id @default(uuid())
+  firstName   String
+  lastName    String?
+  username    String?
+  telegramId  String @unique
+  role      RoleEnum @default(USER)
+  isActive  Boolean @default(true)
+  userId      String?
+  user        User? @relation(fields: [userId],references: [id])
+  code         code[]
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt    
+}
+
+model session {
+  id            String   @id @default(uuid())
+  userId        String   
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id])
+}
+
+
+model code {
+  id           String   @id @default(uuid())
+  userId       String   
+  code        String   @unique
+  user         telegramUser     @relation(fields: [userId], references: [id])
+  createdAt    DateTime @default(now())
+}
 model postgress_sessions {
   id      String  @id
   session String

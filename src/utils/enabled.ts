@@ -9,9 +9,12 @@ enum enabledEnum {
 }
 const enabled = async (id: string, name: string): Promise<enabledEnum> => {
   name = xss(name);
-  const user = await prisma.user.findFirst({
+  const user = await prisma.telegramUser.findFirst({
     where: {
-      telegram_id: id,
+      telegramId: id,
+    },
+    include: {
+      user: true,
     },
   });
 
@@ -20,8 +23,7 @@ const enabled = async (id: string, name: string): Promise<enabledEnum> => {
       return enabledEnum.three;
     }
     if (user.role === "USER") {
-      if (user.working) {
-        console.log("working");
+      if (!user.user?.phone) {
         return enabledEnum.four;
       }
       return enabledEnum.one;
@@ -31,11 +33,10 @@ const enabled = async (id: string, name: string): Promise<enabledEnum> => {
 
     return enabledEnum.one;
   } else {
-    let user = await prisma.user.create({
+    let user = await prisma.telegramUser.create({
       data: {
-        telegram_id: id,
-        name: name,
-        username: name,
+        telegramId: id,
+        firstName: name,
       },
     });
 
